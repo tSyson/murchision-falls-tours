@@ -1,10 +1,38 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, TreePine } from "lucide-react";
+import { Menu, X, TreePine, Shield, LogOut } from "lucide-react";
+import { useAdmin } from "@/hooks/use-admin";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export const Navigation = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const { isAdmin } = useAdmin();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  useState(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  });
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logged out",
+      description: "You have been successfully logged out.",
+    });
+    navigate("/");
+  };
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -68,9 +96,28 @@ export const Navigation = () => {
             </li>
           </ul>
 
-          <Link to="/auth" className="hidden md:block">
-            <Button variant="default">Login / Register</Button>
-          </Link>
+          <div className="hidden md:flex items-center gap-3">
+            {user ? (
+              <>
+                {isAdmin && (
+                  <Link to="/admin">
+                    <Button variant="outline" size="sm">
+                      <Shield className="w-4 h-4 mr-2" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
+                <Button variant="outline" size="sm" onClick={handleLogout}>
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Link to="/auth">
+                <Button variant="default">Login / Register</Button>
+              </Link>
+            )}
+          </div>
 
           {/* Mobile Menu Button */}
           <button
@@ -125,11 +172,39 @@ export const Navigation = () => {
                   Contact
                 </button>
               </li>
-              <li>
-                <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button variant="default" className="w-full">Login / Register</Button>
-                </Link>
-              </li>
+              {user ? (
+                <>
+                  {isAdmin && (
+                    <li>
+                      <Link to="/admin" onClick={() => setIsMobileMenuOpen(false)}>
+                        <Button variant="outline" className="w-full">
+                          <Shield className="w-4 h-4 mr-2" />
+                          Admin Dashboard
+                        </Button>
+                      </Link>
+                    </li>
+                  )}
+                  <li>
+                    <Button 
+                      variant="outline" 
+                      className="w-full"
+                      onClick={() => {
+                        handleLogout();
+                        setIsMobileMenuOpen(false);
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Logout
+                    </Button>
+                  </li>
+                </>
+              ) : (
+                <li>
+                  <Link to="/auth" onClick={() => setIsMobileMenuOpen(false)}>
+                    <Button variant="default" className="w-full">Login / Register</Button>
+                  </Link>
+                </li>
+              )}
             </ul>
           </div>
         )}

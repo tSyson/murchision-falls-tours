@@ -1,12 +1,58 @@
+import { useState, useEffect } from "react";
 import { MapPin, Phone, Mail, Clock } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ContactContent {
+  title: string;
+  address: string;
+  phone: string;
+  email: string;
+  hours: string;
+}
 
 export const Contact = () => {
+  const [content, setContent] = useState<ContactContent>({
+    title: "Contact the Park Manager",
+    address: "Murchison Falls National Park, Northern Uganda",
+    phone: "+256 785393756",
+    email: "tugumesyson76@gmail.com",
+    hours: "Open daily: 6:00 AM - 6:00 PM",
+  });
+
+  useEffect(() => {
+    loadContent();
+  }, []);
+
+  const loadContent = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("site_content")
+        .select("content")
+        .eq("section", "contact")
+        .maybeSingle();
+
+      if (error) throw error;
+      
+      if (data && data.content) {
+        const parsed = data.content as Record<string, string>;
+        setContent({
+          title: parsed.title || content.title,
+          address: parsed.address || content.address,
+          phone: parsed.phone || content.phone,
+          email: parsed.email || content.email,
+          hours: parsed.hours || content.hours,
+        });
+      }
+    } catch (error) {
+      console.error("Error loading contact content:", error);
+    }
+  };
   return (
     <section id="contact" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <h2 className="text-4xl md:text-5xl font-bold text-center mb-12 text-primary">
-          Contact the Park Manager
+          {content.title}
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
           <div>
@@ -14,19 +60,19 @@ export const Contact = () => {
             <ul className="space-y-4">
               <li className="flex items-start gap-4">
                 <MapPin className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
-                <span>Murchison Falls National Park, Northern Uganda</span>
+                <span>{content.address}</span>
               </li>
               <li className="flex items-start gap-4">
                 <Phone className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
-                <span>+256 785393756</span>
+                <span>{content.phone}</span>
               </li>
               <li className="flex items-start gap-4">
                 <Mail className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
-                <span>tugumesyson76@gmail.com</span>
+                <span>{content.email}</span>
               </li>
               <li className="flex items-start gap-4">
                 <Clock className="w-6 h-6 text-accent flex-shrink-0 mt-1" />
-                <span>Open daily: 6:00 AM - 6:00 PM</span>
+                <span>{content.hours}</span>
               </li>
             </ul>
           </div>

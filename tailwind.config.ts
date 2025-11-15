@@ -47,16 +47,18 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        sidebar: {
-          DEFAULT: "hsl(var(--sidebar-background))",
-          foreground: "hsl(var(--sidebar-foreground))",
-          primary: "hsl(var(--sidebar-primary))",
-          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
-          accent: "hsl(var(--sidebar-accent))",
-          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
-          border: "hsl(var(--sidebar-border))",
-          ring: "hsl(var(--sidebar-ring))",
+        nature: {
+          green: "hsl(var(--nature-green))",
+          forest: "hsl(var(--forest-green))",
+          leaf: "hsl(var(--leaf-green))",
+          earth: "hsl(var(--earth-brown))",
+          sand: "hsl(var(--sand))",
         },
+      },
+      boxShadow: {
+        'nature-sm': 'var(--shadow-sm)',
+        'nature-md': 'var(--shadow-md)',
+        'nature-lg': 'var(--shadow-lg)',
       },
       borderRadius: {
         lg: "var(--radius)",

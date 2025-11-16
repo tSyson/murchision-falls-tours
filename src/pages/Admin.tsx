@@ -3,6 +3,7 @@ import { ContentEditor } from "@/components/admin/ContentEditor";
 import { AttractionsManager } from "@/components/admin/AttractionsManager";
 import { BookingsManager } from "@/components/admin/BookingsManager";
 import { HeroImageManager } from "@/components/admin/HeroImageManager";
+import { TourPackagesManager } from "@/components/admin/TourPackagesManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield } from "lucide-react";
 
@@ -17,14 +18,23 @@ const Admin = () => {
             <h1 className="text-4xl font-bold text-primary">Admin Dashboard</h1>
           </div>
 
-          <Tabs defaultValue="hero" className="w-full">
-            <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
-              <TabsTrigger value="hero">Hero</TabsTrigger>
+          <Tabs defaultValue="packages" className="w-full">
+            <TabsList className="grid w-full grid-cols-6 lg:w-auto lg:inline-grid">
+              <TabsTrigger value="packages">Packages</TabsTrigger>
+              <TabsTrigger value="bookings">Bookings</TabsTrigger>
               <TabsTrigger value="heroImage">Hero Image</TabsTrigger>
+              <TabsTrigger value="hero">Hero Text</TabsTrigger>
               <TabsTrigger value="contact">Contact</TabsTrigger>
               <TabsTrigger value="attractions">Attractions</TabsTrigger>
-              <TabsTrigger value="bookings">Bookings</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="packages" className="mt-6">
+              <TourPackagesManager />
+            </TabsContent>
+
+            <TabsContent value="bookings" className="mt-6">
+              <BookingsManager />
+            </TabsContent>
 
             <TabsContent value="hero" className="mt-6">
               <ContentEditor
@@ -60,9 +70,6 @@ const Admin = () => {
               <AttractionsManager />
             </TabsContent>
 
-            <TabsContent value="bookings" className="mt-6">
-              <BookingsManager />
-            </TabsContent>
           </Tabs>
         </div>
       </div>

@@ -27,6 +27,7 @@ interface Booking {
   start_date: string;
   end_date: string;
   photo_url: string | null;
+  price_per_person: number | null;
   status: string;
   created_at: string;
 }
@@ -137,8 +138,13 @@ export const BookingsManager = () => {
                 <div className="text-sm space-y-1">
                   <p className="text-muted-foreground">{booking.email}</p>
                   <p className="text-muted-foreground">{booking.phone}</p>
-                  <p className="font-medium">{booking.tour_package}</p>
+                  <p className="font-medium text-primary">{booking.tour_package}</p>
                   <p>Guests: {booking.num_guests}</p>
+                  {booking.price_per_person && (
+                    <p className="font-bold text-primary">
+                      ${booking.price_per_person} × {booking.num_guests} = ${(booking.price_per_person * booking.num_guests).toFixed(2)}
+                    </p>
+                  )}
                   <p className="text-sm">
                     {new Date(booking.start_date).toLocaleDateString()} - {new Date(booking.end_date).toLocaleDateString()}
                   </p>

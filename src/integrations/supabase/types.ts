@@ -105,6 +105,7 @@ export type Database = {
           num_guests: number
           phone: string
           photo_url: string | null
+          price_per_person: number | null
           start_date: string
           status: string | null
           tour_package: string
@@ -119,6 +120,7 @@ export type Database = {
           num_guests: number
           phone: string
           photo_url?: string | null
+          price_per_person?: number | null
           start_date: string
           status?: string | null
           tour_package: string
@@ -133,10 +135,44 @@ export type Database = {
           num_guests?: number
           phone?: string
           photo_url?: string | null
+          price_per_person?: number | null
           start_date?: string
           status?: string | null
           tour_package?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      tour_packages: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          display_order: number | null
+          id: string
+          is_active: boolean | null
+          name: string
+          price_per_person: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          price_per_person: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          display_order?: number | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          price_per_person?: number
+          updated_at?: string | null
         }
         Relationships: []
       }

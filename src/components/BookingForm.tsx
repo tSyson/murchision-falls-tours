@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,13 @@ import { CheckCircle2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+
+interface TourPackage {
+  id: string;
+  name: string;
+  description: string | null;
+  price_per_person: number;
+}
 
 const bookingSchema = z.object({
   fullName: z.string().trim().min(2, "Name must be at least 2 characters").max(100, "Name too long"),
@@ -27,7 +34,29 @@ export const BookingForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
+  const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
+  const [numGuests, setNumGuests] = useState(1);
   const { toast } = useToast();
+
+  useEffect(() => {
+    loadTourPackages();
+  }, []);
+
+  const loadTourPackages = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("tour_packages")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+      setTourPackages(data || []);
+    } catch (error) {
+      console.error("Error loading tour packages:", error);
+    }
+  };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,6 +127,7 @@ export const BookingForm = () => {
         start_date: validated.startDate,
         end_date: validated.endDate,
         photo_url: photoUrl,
+        price_per_person: selectedPackage?.price_per_person,
       });
 
       if (error) throw error;
@@ -182,17 +212,30 @@ export const BookingForm = () => {
             </div>
             <div>
               <Label htmlFor="tourPackage">Preferred Tour Package *</Label>
-              <Select name="tourPackage" required>
+              <Select 
+                name="tourPackage" 
+                required
+                onValueChange={(value) => {
+                  const pkg = tourPackages.find(p => p.name === value);
+                  setSelectedPackage(pkg || null);
+                }}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a package" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="game-drive">Game Drive</SelectItem>
-                  <SelectItem value="boat-safari">Boat Safari</SelectItem>
-                  <SelectItem value="chimpanzee-trek">Chimpanzee Trekking</SelectItem>
-                  <SelectItem value="full-adventure">Full Adventure Package</SelectItem>
+                  {tourPackages.map((pkg) => (
+                    <SelectItem key={pkg.id} value={pkg.name}>
+                      {pkg.name} - ${pkg.price_per_person} per person
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
+              {selectedPackage && (
+                <p className="text-sm text-primary font-semibold mt-2">
+                  ${selectedPackage.price_per_person} per person
+                </p>
+              )}
             </div>
           </div>
 
@@ -205,9 +248,16 @@ export const BookingForm = () => {
                 type="number" 
                 min="1" 
                 max="50"
+                value={numGuests}
+                onChange={(e) => setNumGuests(parseInt(e.target.value) || 1)}
                 placeholder="Number of guests"
                 required 
               />
+              {selectedPackage && numGuests > 0 && (
+                <p className="text-sm font-bold text-primary mt-2">
+                  Total: ${(selectedPackage.price_per_person * numGuests).toFixed(2)}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="startDate">Start Date *</Label>

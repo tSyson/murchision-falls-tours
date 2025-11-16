@@ -1,6 +1,8 @@
 import { Navigation } from "@/components/Navigation";
 import { ContentEditor } from "@/components/admin/ContentEditor";
 import { AttractionsManager } from "@/components/admin/AttractionsManager";
+import { BookingsManager } from "@/components/admin/BookingsManager";
+import { HeroImageManager } from "@/components/admin/HeroImageManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Shield } from "lucide-react";
 
@@ -16,22 +18,28 @@ const Admin = () => {
           </div>
 
           <Tabs defaultValue="hero" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 lg:w-auto lg:inline-grid">
-              <TabsTrigger value="hero">Hero Section</TabsTrigger>
-              <TabsTrigger value="contact">Contact Info</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
+              <TabsTrigger value="hero">Hero</TabsTrigger>
+              <TabsTrigger value="heroImage">Hero Image</TabsTrigger>
+              <TabsTrigger value="contact">Contact</TabsTrigger>
               <TabsTrigger value="attractions">Attractions</TabsTrigger>
+              <TabsTrigger value="bookings">Bookings</TabsTrigger>
             </TabsList>
 
             <TabsContent value="hero" className="mt-6">
               <ContentEditor
                 section="hero"
-                title="Edit Hero Section"
+                title="Edit Hero Section Text"
                 fields={[
                   { name: "title", label: "Main Title", type: "text" },
                   { name: "subtitle", label: "Subtitle", type: "textarea" },
                   { name: "ctaText", label: "Button Text", type: "text" },
                 ]}
               />
+            </TabsContent>
+
+            <TabsContent value="heroImage" className="mt-6">
+              <HeroImageManager />
             </TabsContent>
 
             <TabsContent value="contact" className="mt-6">
@@ -50,6 +58,10 @@ const Admin = () => {
 
             <TabsContent value="attractions" className="mt-6">
               <AttractionsManager />
+            </TabsContent>
+
+            <TabsContent value="bookings" className="mt-6">
+              <BookingsManager />
             </TabsContent>
           </Tabs>
         </div>

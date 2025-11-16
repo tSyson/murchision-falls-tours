@@ -15,6 +15,7 @@ export const Hero = () => {
     subtitle: "Experience wildlife, adventure, and the breathtaking Nile as it plunges through the world's most powerful waterfall",
     ctaText: "Plan Your Visit",
   });
+  const [dynamicHeroImage, setDynamicHeroImage] = useState<string | null>(null);
 
   useEffect(() => {
     loadContent();
@@ -37,6 +38,9 @@ export const Hero = () => {
           subtitle: parsed.subtitle || content.subtitle,
           ctaText: parsed.ctaText || content.ctaText,
         });
+        if (parsed.heroImage) {
+          setDynamicHeroImage(parsed.heroImage);
+        }
       }
     } catch (error) {
       console.error("Error loading hero content:", error);
@@ -53,7 +57,7 @@ export const Hero = () => {
       id="home"
       className="relative h-screen flex items-center justify-center overflow-hidden"
       style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${heroImage})`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${dynamicHeroImage || heroImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'

@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -15,13 +15,39 @@ const bookingSchema = z.object({
   phone: z.string().trim().min(10, "Phone number must be at least 10 digits").max(20, "Phone number too long"),
   tourPackage: z.string().min(1, "Please select a tour package"),
   numGuests: z.number().min(1, "At least 1 guest required").max(50, "Maximum 50 guests"),
-  visitDate: z.string().min(1, "Please select a date"),
+  startDate: z.string().min(1, "Please select start date"),
+  endDate: z.string().min(1, "Please select end date"),
+}).refine((data) => new Date(data.endDate) >= new Date(data.startDate), {
+  message: "End date must be after or equal to start date",
+  path: ["endDate"],
 });
 
 export const BookingForm = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const { toast } = useToast();
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          variant: "destructive",
+          title: "File too large",
+          description: "Photo must be less than 5MB",
+        });
+        return;
+      }
+      setPhotoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,11 +60,31 @@ export const BookingForm = () => {
       phone: formData.get("phone") as string,
       tourPackage: formData.get("tourPackage") as string,
       numGuests: parseInt(formData.get("numGuests") as string),
-      visitDate: formData.get("visitDate") as string,
+      startDate: formData.get("startDate") as string,
+      endDate: formData.get("endDate") as string,
     };
 
     try {
       const validated = bookingSchema.parse(data);
+
+      let photoUrl = null;
+      if (photoFile) {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+        const filePath = `bookings/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('site-images')
+          .upload(filePath, photoFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from('site-images')
+          .getPublicUrl(filePath);
+
+        photoUrl = publicUrl;
+      }
 
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -49,7 +95,9 @@ export const BookingForm = () => {
         phone: validated.phone,
         tour_package: validated.tourPackage,
         num_guests: validated.numGuests,
-        visit_date: validated.visitDate,
+        start_date: validated.startDate,
+        end_date: validated.endDate,
+        photo_url: photoUrl,
       });
 
       if (error) throw error;
@@ -162,15 +210,52 @@ export const BookingForm = () => {
               />
             </div>
             <div>
-              <Label htmlFor="visitDate">Date of Visit *</Label>
+              <Label htmlFor="startDate">Start Date *</Label>
               <Input 
-                id="visitDate" 
-                name="visitDate" 
+                id="startDate" 
+                name="startDate" 
                 type="date" 
-                required 
+                required
+                min={new Date().toISOString().split('T')[0]}
               />
             </div>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <Label htmlFor="endDate">End Date *</Label>
+              <Input 
+                id="endDate" 
+                name="endDate" 
+                type="date" 
+                required
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+            <div>
+              <Label htmlFor="photo">Your Photo (for identification)</Label>
+              <Input
+                id="photo"
+                type="file"
+                accept="image/*"
+                onChange={handlePhotoChange}
+              />
+            </div>
+          </div>
+
+          {photoPreview && (
+            <div className="flex justify-center">
+              <img 
+                src={photoPreview} 
+                alt="Preview" 
+                className="w-32 h-32 object-cover rounded-lg border-2"
+              />
+            </div>
+          )}
+
+          <p className="text-xs text-muted-foreground">
+            * Required fields. Photo is optional but helps us identify you during check-in (max 5MB).
+          </p>
 
           <Button 
             type="submit" 

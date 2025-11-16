@@ -99,38 +99,44 @@ export type Database = {
         Row: {
           created_at: string | null
           email: string
+          end_date: string
           full_name: string
           id: string
           num_guests: number
           phone: string
+          photo_url: string | null
+          start_date: string
           status: string | null
           tour_package: string
           user_id: string | null
-          visit_date: string
         }
         Insert: {
           created_at?: string | null
           email: string
+          end_date: string
           full_name: string
           id?: string
           num_guests: number
           phone: string
+          photo_url?: string | null
+          start_date: string
           status?: string | null
           tour_package: string
           user_id?: string | null
-          visit_date: string
         }
         Update: {
           created_at?: string | null
           email?: string
+          end_date?: string
           full_name?: string
           id?: string
           num_guests?: number
           phone?: string
+          photo_url?: string | null
+          start_date?: string
           status?: string | null
           tour_package?: string
           user_id?: string | null
-          visit_date?: string
         }
         Relationships: []
       }
@@ -153,7 +159,15 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

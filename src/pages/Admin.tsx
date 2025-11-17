@@ -5,17 +5,34 @@ import { BookingsManager } from "@/components/admin/BookingsManager";
 import { HeroImageManager } from "@/components/admin/HeroImageManager";
 import { TourPackagesManager } from "@/components/admin/TourPackagesManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { Shield, Database } from "lucide-react";
 
 const Admin = () => {
+  const { toast } = useToast();
+
+  const handleBackendAccess = () => {
+    toast({
+      title: "Backend Access",
+      description: "Use the 'View Backend' button below to access the database, storage, and backend settings.",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-muted">
       <Navigation />
       <div className="pt-20 pb-12">
         <div className="container mx-auto px-4">
-          <div className="flex items-center gap-3 mb-8">
-            <Shield className="w-8 h-8 text-primary" />
-            <h1 className="text-4xl font-bold text-primary">Admin Dashboard</h1>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <Shield className="w-8 h-8 text-primary" />
+              <h1 className="text-4xl font-bold text-primary">Admin Dashboard</h1>
+            </div>
+            <Button onClick={handleBackendAccess} variant="outline" className="gap-2">
+              <Database className="w-4 h-4" />
+              View Backend
+            </Button>
           </div>
 
           <Tabs defaultValue="packages" className="w-full">

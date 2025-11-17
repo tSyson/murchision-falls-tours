@@ -130,7 +130,7 @@ export const BookingsManager = () => {
                 <img
                   src={booking.photo_url}
                   alt={booking.full_name}
-                  className="w-full h-48 object-cover"
+                  className="w-full h-48 object-cover object-top"
                 />
               )}
               <CardContent className="p-4 space-y-2">

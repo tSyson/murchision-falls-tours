@@ -8,6 +8,7 @@ import { CheckCircle2, Upload } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
+import { ImageCropper } from "./ImageCropper";
 
 interface TourPackage {
   id: string;
@@ -37,6 +38,8 @@ export const BookingForm = () => {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
   const [numGuests, setNumGuests] = useState(1);
+  const [showCropper, setShowCropper] = useState(false);
+  const [originalImage, setOriginalImage] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -69,13 +72,32 @@ export const BookingForm = () => {
         });
         return;
       }
-      setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setPhotoPreview(reader.result as string);
+        setOriginalImage(reader.result as string);
+        setShowCropper(true);
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  const handleCropComplete = (croppedImage: Blob) => {
+    const file = new File([croppedImage], "cropped-photo.jpg", { type: "image/jpeg" });
+    setPhotoFile(file);
+    
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setPhotoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(croppedImage);
+    
+    setShowCropper(false);
+    setOriginalImage(null);
+  };
+
+  const handleCropCancel = () => {
+    setShowCropper(false);
+    setOriginalImage(null);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -317,6 +339,15 @@ export const BookingForm = () => {
           </Button>
         </form>
       </CardContent>
+      
+      {originalImage && (
+        <ImageCropper
+          image={originalImage}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+          open={showCropper}
+        />
+      )}
     </Card>
   );
 };

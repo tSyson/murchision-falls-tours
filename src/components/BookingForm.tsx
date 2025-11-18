@@ -154,6 +154,25 @@ export const BookingForm = () => {
 
       if (error) throw error;
 
+      // Send booking confirmation emails
+      try {
+        await supabase.functions.invoke('send-booking-emails', {
+          body: {
+            fullName: validated.fullName,
+            email: validated.email,
+            phone: validated.phone,
+            tourPackage: validated.tourPackage,
+            numGuests: validated.numGuests,
+            startDate: validated.startDate,
+            endDate: validated.endDate,
+            pricePerPerson: selectedPackage?.price_per_person || 0,
+          },
+        });
+      } catch (emailError) {
+        console.error("Error sending emails:", emailError);
+        // Don't fail the booking if emails fail
+      }
+
       setIsSubmitted(true);
       toast({
         title: "Booking Submitted!",

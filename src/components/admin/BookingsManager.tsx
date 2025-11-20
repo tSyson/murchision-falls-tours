@@ -35,6 +35,7 @@ interface Booking {
 export const BookingsManager = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [photoUrls, setPhotoUrls] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -50,6 +51,23 @@ export const BookingsManager = () => {
 
       if (error) throw error;
       setBookings(data || []);
+      
+      // Generate signed URLs for photos
+      if (data) {
+        const urls: Record<string, string> = {};
+        for (const booking of data) {
+          if (booking.photo_url) {
+            const { data: signedUrlData } = await supabase.storage
+              .from("site-images")
+              .createSignedUrl(booking.photo_url, 3600); // Valid for 1 hour
+            
+            if (signedUrlData?.signedUrl) {
+              urls[booking.id] = signedUrlData.signedUrl;
+            }
+          }
+        }
+        setPhotoUrls(urls);
+      }
     } catch (error) {
       toast({
         variant: "destructive",
@@ -126,9 +144,9 @@ export const BookingsManager = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {bookings.map((booking) => (
             <Card key={booking.id} className="overflow-hidden">
-              {booking.photo_url && (
+              {photoUrls[booking.id] && (
                 <img
-                  src={booking.photo_url}
+                  src={photoUrls[booking.id]}
                   alt={booking.full_name}
                   className="w-full h-48 object-cover object-top"
                 />

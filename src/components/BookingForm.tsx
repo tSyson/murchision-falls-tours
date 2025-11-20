@@ -163,11 +163,8 @@ export const BookingForm = () => {
 
         if (uploadError) throw uploadError;
 
-        const { data: { publicUrl } } = supabase.storage
-          .from('site-images')
-          .getPublicUrl(filePath);
-
-        photoUrl = publicUrl;
+        // Store the file path (bucket is now private, admin will use signed URLs)
+        photoUrl = filePath;
       }
 
       const { error } = await supabase.from("tour_bookings").insert({

@@ -40,10 +40,33 @@ export const BookingForm = () => {
   const [numGuests, setNumGuests] = useState(1);
   const [showCropper, setShowCropper] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      setIsCheckingAuth(false);
+      
+      if (!user) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to make a booking.",
+          variant: "destructive",
+        });
+      }
+    };
+
+    checkAuth();
     loadTourPackages();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const loadTourPackages = async () => {
@@ -102,6 +125,16 @@ export const BookingForm = () => {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to make a booking.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     const formData = new FormData(e.currentTarget);
@@ -137,10 +170,8 @@ export const BookingForm = () => {
         photoUrl = publicUrl;
       }
 
-      const { data: { user } } = await supabase.auth.getUser();
-
       const { error } = await supabase.from("tour_bookings").insert({
-        user_id: user?.id,
+        user_id: user.id,
         full_name: validated.fullName,
         email: validated.email,
         phone: validated.phone,

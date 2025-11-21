@@ -117,38 +117,157 @@ const handler = async (req: Request): Promise<Response> => {
     const customerEmailResponse = await resend.emails.send({
       from: "Murchison Falls National Park <onboarding@resend.dev>",
       to: [booking.email],
-      subject: "Booking Confirmation - Murchison Falls National Park",
+      subject: "✅ Booking Confirmation - Murchison Falls National Park",
       html: `
-        <h2>Thank You for Your Booking!</h2>
-        <p>Dear ${safeName},</p>
-        <p>We have received your booking request for <strong>${safePackage}</strong> and are excited to have you visit Murchison Falls National Park!</p>
-        
-        <div style="margin: 20px 0; padding: 20px; background-color: #f0f9ff; border-radius: 8px; border-left: 4px solid #0ea5e9;">
-          <h3 style="margin-top: 0; color: #0369a1;">Your Booking Details</h3>
-          <p><strong>Tour Package:</strong> ${safePackage}</p>
-          <p><strong>Number of Guests:</strong> ${booking.numGuests}</p>
-          <p><strong>Start Date:</strong> ${safeStartDate}</p>
-          <p><strong>End Date:</strong> ${safeEndDate}</p>
-          <p><strong>Price per Person:</strong> $${booking.pricePerPerson}</p>
-          <p><strong>Total Price:</strong> $${totalPrice}</p>
-        </div>
-
-        <h3>What's Next?</h3>
-        <ul>
-          <li>Our team will review your booking request</li>
-          <li>You will receive a confirmation call or email within 24 hours</li>
-          <li>We'll provide detailed information about meeting points and what to bring</li>
-          <li>Payment instructions will be sent upon confirmation</li>
-        </ul>
-
-        <p style="margin-top: 30px;">If you have any questions, please don't hesitate to contact us:</p>
-        <p><strong>Phone:</strong> +256 785393756<br>
-        <strong>Email:</strong> tugumesyson76@gmail.com</p>
-
-        <p style="margin-top: 30px; color: #666; font-size: 14px;">
-          Best regards,<br>
-          Murchison Falls National Park Team
-        </p>
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #f5f5f5;">
+          <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 0;">
+            <tr>
+              <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                  
+                  <!-- Header -->
+                  <tr>
+                    <td style="background: linear-gradient(135deg, #2c5f2d 0%, #97bc62 100%); padding: 40px 30px; text-align: center; border-radius: 8px 8px 0 0;">
+                      <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">Booking Confirmed! ✓</h1>
+                      <p style="margin: 10px 0 0; color: #ffffff; font-size: 16px;">Murchison Falls National Park</p>
+                    </td>
+                  </tr>
+                  
+                  <!-- Welcome Message -->
+                  <tr>
+                    <td style="padding: 30px 30px 20px;">
+                      <p style="margin: 0; font-size: 16px; color: #333333; line-height: 1.6;">
+                        Dear <strong>${safeName}</strong>,
+                      </p>
+                      <p style="margin: 15px 0 0; font-size: 16px; color: #333333; line-height: 1.6;">
+                        Thank you for choosing Murchison Falls National Park! We're excited to confirm your booking. Your adventure awaits!
+                      </p>
+                    </td>
+                  </tr>
+                  
+                  <!-- Booking Receipt -->
+                  <tr>
+                    <td style="padding: 0 30px 30px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px;">
+                        <tr>
+                          <td style="padding: 20px;">
+                            <h2 style="margin: 0 0 20px; font-size: 20px; color: #2c5f2d; border-bottom: 2px solid #97bc62; padding-bottom: 10px;">
+                              Booking Receipt
+                            </h2>
+                            
+                            <!-- Tour Details -->
+                            <table width="100%" cellpadding="8" cellspacing="0">
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #666666; width: 40%;">Tour Package:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #333333; font-weight: bold;">${safePackage}</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">Number of Guests:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #333333; font-weight: bold;">${booking.numGuests} ${booking.numGuests === 1 ? 'Guest' : 'Guests'}</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">Check-in Date:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #333333; font-weight: bold;">${safeStartDate}</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">Check-out Date:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #333333; font-weight: bold;">${safeEndDate}</td>
+                              </tr>
+                              <tr>
+                                <td colspan="2" style="padding: 15px 0 8px; border-top: 1px solid #e5e7eb;"></td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">Price per Person:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #333333;">$${booking.pricePerPerson}</td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 14px; color: #666666;">Guests:</td>
+                                <td style="padding: 8px 0; font-size: 14px; color: #333333;">× ${booking.numGuests}</td>
+                              </tr>
+                              <tr>
+                                <td colspan="2" style="padding: 10px 0; border-top: 2px solid #2c5f2d;"></td>
+                              </tr>
+                              <tr>
+                                <td style="padding: 8px 0; font-size: 18px; color: #2c5f2d; font-weight: bold;">Total Amount:</td>
+                                <td style="padding: 8px 0; font-size: 22px; color: #2c5f2d; font-weight: bold;">$${totalPrice.toFixed(2)}</td>
+                              </tr>
+                            </table>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                  <!-- Contact Information -->
+                  <tr>
+                    <td style="padding: 0 30px 30px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+                        <tr>
+                          <td style="padding: 15px 20px;">
+                            <p style="margin: 0 0 10px; font-size: 14px; color: #92400e; font-weight: bold;">Your Contact Information:</p>
+                            <p style="margin: 5px 0; font-size: 14px; color: #92400e;">📧 ${safeEmail}</p>
+                            <p style="margin: 5px 0; font-size: 14px; color: #92400e;">📱 ${safePhone}</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                  <!-- What's Next -->
+                  <tr>
+                    <td style="padding: 0 30px 30px;">
+                      <h3 style="margin: 0 0 15px; font-size: 18px; color: #2c5f2d;">What's Next?</h3>
+                      <ul style="margin: 0; padding-left: 20px; color: #666666; line-height: 1.8;">
+                        <li>Our team will review your booking request</li>
+                        <li>You'll receive a confirmation call at ${safePhone} within 24 hours</li>
+                        <li>We'll provide detailed information about meeting points and what to bring</li>
+                        <li>Payment instructions will be sent upon confirmation</li>
+                      </ul>
+                    </td>
+                  </tr>
+                  
+                  <!-- Contact Section -->
+                  <tr>
+                    <td style="padding: 0 30px 30px;">
+                      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f0f9ff; border-radius: 4px;">
+                        <tr>
+                          <td style="padding: 20px;">
+                            <p style="margin: 0 0 10px; font-size: 16px; color: #333333; font-weight: bold;">Questions? We're here to help!</p>
+                            <p style="margin: 5px 0; font-size: 14px; color: #666666;">📞 Phone: +256 785393756</p>
+                            <p style="margin: 5px 0; font-size: 14px; color: #666666;">✉️ Email: tugumesyson76@gmail.com</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  
+                  <!-- Footer -->
+                  <tr>
+                    <td style="padding: 30px; background-color: #f9fafb; text-align: center; border-radius: 0 0 8px 8px; border-top: 1px solid #e5e7eb;">
+                      <p style="margin: 0 0 10px; font-size: 14px; color: #666666;">
+                        Prepare for an unforgettable adventure at Murchison Falls!
+                      </p>
+                      <p style="margin: 0; font-size: 12px; color: #999999;">
+                        This is an automated confirmation email. Please keep it for your records.
+                      </p>
+                      <p style="margin: 15px 0 0; font-size: 12px; color: #999999;">
+                        © ${new Date().getFullYear()} Murchison Falls National Park. All rights reserved.
+                      </p>
+                    </td>
+                  </tr>
+                  
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+        </html>
       `,
     });
 

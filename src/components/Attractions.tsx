@@ -30,6 +30,26 @@ export const Attractions = () => {
 
   useEffect(() => {
     loadAttractions();
+
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('attractions-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'attractions'
+        },
+        () => {
+          loadAttractions();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadAttractions = async () => {

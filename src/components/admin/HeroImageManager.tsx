@@ -12,6 +12,7 @@ export const HeroImageManager = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -29,7 +30,19 @@ export const HeroImageManager = () => {
       if (error) throw error;
 
       if (data?.content && typeof data.content === 'object' && 'heroImage' in data.content) {
-        setHeroImage(data.content.heroImage as string);
+        const imagePath = data.content.heroImage as string;
+        setHeroImage(imagePath);
+        
+        // Generate signed URL if it's a storage path
+        if (imagePath && !imagePath.startsWith('http')) {
+          const { data: signedData } = await supabase.storage
+            .from('site-images')
+            .createSignedUrl(imagePath, 60 * 60);
+          
+          if (signedData?.signedUrl) {
+            setSignedUrl(signedData.signedUrl);
+          }
+        }
       }
     } catch (error) {
       console.error("Error loading hero image:", error);
@@ -84,10 +97,6 @@ export const HeroImageManager = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('site-images')
-        .getPublicUrl(filePath);
-
       const { data: { user } } = await supabase.auth.getUser();
 
       const { data: existingContent } = await supabase
@@ -102,7 +111,7 @@ export const HeroImageManager = () => {
         .from("site_content")
         .upsert({
           section: "hero",
-          content: { ...content, heroImage: publicUrl },
+          content: { ...content, heroImage: filePath },
           updated_by: user?.id,
           updated_at: new Date().toISOString(),
         }, {
@@ -111,7 +120,7 @@ export const HeroImageManager = () => {
 
       if (error) throw error;
 
-      setHeroImage(publicUrl);
+      setHeroImage(filePath);
       setPreview(null);
       toast({
         title: "Success",
@@ -144,10 +153,10 @@ export const HeroImageManager = () => {
         <CardTitle>Hero Section Image</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {(heroImage || preview) && (
+        {(signedUrl || preview) && (
           <div className="relative w-full h-64 rounded-lg overflow-hidden">
             <img
-              src={preview || heroImage || ""}
+              src={preview || signedUrl || ""}
               alt="Hero"
               className="w-full h-full object-cover"
             />

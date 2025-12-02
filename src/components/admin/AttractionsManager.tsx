@@ -24,6 +24,7 @@ export const AttractionsManager = () => {
   const [editingAttraction, setEditingAttraction] = useState<Attraction | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -39,6 +40,21 @@ export const AttractionsManager = () => {
 
       if (error) throw error;
       setAttractions(data || []);
+      
+      // Generate signed URLs for images
+      const urls: Record<string, string> = {};
+      for (const attraction of data || []) {
+        if (attraction.image_url && !attraction.image_url.startsWith('http')) {
+          const { data: signedData } = await supabase.storage
+            .from('site-images')
+            .createSignedUrl(attraction.image_url, 60 * 60);
+          
+          if (signedData?.signedUrl) {
+            urls[attraction.id] = signedData.signedUrl;
+          }
+        }
+      }
+      setSignedUrls(urls);
     } catch (error) {
       console.error("Error loading attractions:", error);
     } finally {
@@ -62,13 +78,9 @@ export const AttractionsManager = () => {
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from("site-images")
-        .getPublicUrl(filePath);
-
       const { error: updateError } = await supabase
         .from("attractions")
-        .update({ image_url: publicUrl })
+        .update({ image_url: filePath })
         .eq("id", attractionId);
 
       if (updateError) throw updateError;
@@ -203,9 +215,9 @@ export const AttractionsManager = () => {
                   <div className="flex-1">
                     <h3 className="font-bold text-lg">{attraction.title}</h3>
                     <p className="text-muted-foreground mt-1">{attraction.description}</p>
-                    {attraction.image_url && (
+                    {signedUrls[attraction.id] && (
                       <img
-                        src={attraction.image_url}
+                        src={signedUrls[attraction.id]}
                         alt={attraction.title}
                         className="mt-3 w-32 h-32 object-cover rounded"
                       />

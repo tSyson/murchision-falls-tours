@@ -62,15 +62,7 @@ export const Hero = () => {
         });
         if (parsed.heroImage) {
           setDynamicHeroImage(parsed.heroImage);
-          
-          // Generate signed URL for the image
-          const { data: signedData } = await supabase.storage
-            .from('site-images')
-            .createSignedUrl(parsed.heroImage, 60 * 60); // 1 hour expiry
-          
-          if (signedData?.signedUrl) {
-            setSignedImageUrl(signedData.signedUrl);
-          }
+          setSignedImageUrl(parsed.heroImage);
         }
       }
     } catch (error) {

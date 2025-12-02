@@ -27,6 +27,7 @@ interface Attraction {
 export const Attractions = () => {
   const [attractions, setAttractions] = useState<Attraction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadAttractions();
@@ -62,6 +63,21 @@ export const Attractions = () => {
 
       if (error) throw error;
       setAttractions(data || []);
+      
+      // Generate signed URLs for images
+      const urls: Record<string, string> = {};
+      for (const attraction of data || []) {
+        if (attraction.image_url && !attraction.image_url.startsWith('http')) {
+          const { data: signedData } = await supabase.storage
+            .from('site-images')
+            .createSignedUrl(attraction.image_url, 60 * 60); // 1 hour expiry
+          
+          if (signedData?.signedUrl) {
+            urls[attraction.id] = signedData.signedUrl;
+          }
+        }
+      }
+      setSignedUrls(urls);
     } catch (error) {
       console.error("Error loading attractions:", error);
     } finally {
@@ -92,7 +108,7 @@ export const Attractions = () => {
             >
               <div className="h-56 overflow-hidden">
                 <img 
-                  src={attraction.image_url || defaultImages[attraction.title] || fallsImage} 
+                  src={signedUrls[attraction.id] || defaultImages[attraction.title] || fallsImage} 
                   alt={attraction.title}
                   className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
                 />

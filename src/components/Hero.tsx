@@ -16,6 +16,7 @@ export const Hero = () => {
     ctaText: "Plan Your Visit",
   });
   const [dynamicHeroImage, setDynamicHeroImage] = useState<string | null>(null);
+  const [signedImageUrl, setSignedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadContent();
@@ -61,6 +62,15 @@ export const Hero = () => {
         });
         if (parsed.heroImage) {
           setDynamicHeroImage(parsed.heroImage);
+          
+          // Generate signed URL for the image
+          const { data: signedData } = await supabase.storage
+            .from('site-images')
+            .createSignedUrl(parsed.heroImage, 60 * 60); // 1 hour expiry
+          
+          if (signedData?.signedUrl) {
+            setSignedImageUrl(signedData.signedUrl);
+          }
         }
       }
     } catch (error) {
@@ -78,7 +88,7 @@ export const Hero = () => {
       id="home"
       className="relative h-screen flex items-center justify-center overflow-hidden"
       style={{
-        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${dynamicHeroImage || heroImage})`,
+        backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url(${signedImageUrl || heroImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundAttachment: 'fixed'

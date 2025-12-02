@@ -30,19 +30,9 @@ export const HeroImageManager = () => {
       if (error) throw error;
 
       if (data?.content && typeof data.content === 'object' && 'heroImage' in data.content) {
-        const imagePath = data.content.heroImage as string;
-        setHeroImage(imagePath);
-        
-        // Generate signed URL if it's a storage path
-        if (imagePath && !imagePath.startsWith('http')) {
-          const { data: signedData } = await supabase.storage
-            .from('site-images')
-            .createSignedUrl(imagePath, 60 * 60);
-          
-          if (signedData?.signedUrl) {
-            setSignedUrl(signedData.signedUrl);
-          }
-        }
+        const imageUrl = data.content.heroImage as string;
+        setHeroImage(imageUrl);
+        setSignedUrl(imageUrl);
       }
     } catch (error) {
       console.error("Error loading hero image:", error);
@@ -97,6 +87,10 @@ export const HeroImageManager = () => {
 
       if (uploadError) throw uploadError;
 
+      const { data: { publicUrl } } = supabase.storage
+        .from('site-images')
+        .getPublicUrl(filePath);
+
       const { data: { user } } = await supabase.auth.getUser();
 
       const { data: existingContent } = await supabase
@@ -111,7 +105,7 @@ export const HeroImageManager = () => {
         .from("site_content")
         .upsert({
           section: "hero",
-          content: { ...content, heroImage: filePath },
+          content: { ...content, heroImage: publicUrl },
           updated_by: user?.id,
           updated_at: new Date().toISOString(),
         }, {
@@ -120,7 +114,8 @@ export const HeroImageManager = () => {
 
       if (error) throw error;
 
-      setHeroImage(filePath);
+      setHeroImage(publicUrl);
+      setSignedUrl(publicUrl);
       setPreview(null);
       toast({
         title: "Success",

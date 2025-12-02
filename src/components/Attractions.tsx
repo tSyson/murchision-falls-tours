@@ -64,17 +64,11 @@ export const Attractions = () => {
       if (error) throw error;
       setAttractions(data || []);
       
-      // Generate signed URLs for images
+      // Set URLs directly from image_url (now public URLs)
       const urls: Record<string, string> = {};
       for (const attraction of data || []) {
-        if (attraction.image_url && !attraction.image_url.startsWith('http')) {
-          const { data: signedData } = await supabase.storage
-            .from('site-images')
-            .createSignedUrl(attraction.image_url, 60 * 60); // 1 hour expiry
-          
-          if (signedData?.signedUrl) {
-            urls[attraction.id] = signedData.signedUrl;
-          }
+        if (attraction.image_url) {
+          urls[attraction.id] = attraction.image_url;
         }
       }
       setSignedUrls(urls);

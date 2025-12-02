@@ -41,17 +41,11 @@ export const AttractionsManager = () => {
       if (error) throw error;
       setAttractions(data || []);
       
-      // Generate signed URLs for images
+      // Set signed URLs directly from image_url (now public URLs)
       const urls: Record<string, string> = {};
       for (const attraction of data || []) {
-        if (attraction.image_url && !attraction.image_url.startsWith('http')) {
-          const { data: signedData } = await supabase.storage
-            .from('site-images')
-            .createSignedUrl(attraction.image_url, 60 * 60);
-          
-          if (signedData?.signedUrl) {
-            urls[attraction.id] = signedData.signedUrl;
-          }
+        if (attraction.image_url) {
+          urls[attraction.id] = attraction.image_url;
         }
       }
       setSignedUrls(urls);
@@ -78,9 +72,13 @@ export const AttractionsManager = () => {
 
       if (uploadError) throw uploadError;
 
+      const { data: { publicUrl } } = supabase.storage
+        .from("site-images")
+        .getPublicUrl(filePath);
+
       const { error: updateError } = await supabase
         .from("attractions")
-        .update({ image_url: filePath })
+        .update({ image_url: publicUrl })
         .eq("id", attractionId);
 
       if (updateError) throw updateError;

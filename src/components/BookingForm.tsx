@@ -38,6 +38,24 @@ export const BookingForm = () => {
   const [tourPackages, setTourPackages] = useState<TourPackage[]>([]);
   const [selectedPackage, setSelectedPackage] = useState<TourPackage | null>(null);
   const [numGuests, setNumGuests] = useState(1);
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+
+  const calculateDays = () => {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Include both start and end day
+    return diffDays > 0 ? diffDays : 0;
+  };
+
+  const calculateTotal = () => {
+    if (!selectedPackage || numGuests <= 0) return 0;
+    const days = calculateDays();
+    if (days <= 0) return 0;
+    return selectedPackage.price_per_person * numGuests * days;
+  };
   const [showCropper, setShowCropper] = useState(false);
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [user, setUser] = useState<any>(null);
@@ -302,7 +320,7 @@ export const BookingForm = () => {
               </Select>
               {selectedPackage && (
                 <p className="text-sm text-primary font-semibold mt-2">
-                  ${selectedPackage.price_per_person} per person
+                  ${selectedPackage.price_per_person} per person per day
                 </p>
               )}
             </div>
@@ -325,9 +343,9 @@ export const BookingForm = () => {
                 placeholder="Number of guests"
                 required 
               />
-              {selectedPackage && numGuests > 0 && (
+              {selectedPackage && numGuests > 0 && calculateDays() > 0 && (
                 <p className="text-sm font-bold text-primary mt-2">
-                  Total: ${(selectedPackage.price_per_person * numGuests).toFixed(2)}
+                  Total: ${calculateTotal().toFixed(2)} ({calculateDays()} days × {numGuests} guests × ${selectedPackage.price_per_person}/person/day)
                 </p>
               )}
             </div>
@@ -339,6 +357,8 @@ export const BookingForm = () => {
                 type="date" 
                 required
                 min={new Date().toISOString().split('T')[0]}
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
               />
             </div>
           </div>
@@ -351,7 +371,9 @@ export const BookingForm = () => {
                 name="endDate" 
                 type="date" 
                 required
-                min={new Date().toISOString().split('T')[0]}
+                min={startDate || new Date().toISOString().split('T')[0]}
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
               />
             </div>
             <div>

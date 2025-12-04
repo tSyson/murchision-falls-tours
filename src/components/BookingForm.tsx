@@ -317,8 +317,11 @@ export const BookingForm = () => {
                 type="number" 
                 min="1" 
                 max="50"
-                value={numGuests}
-                onChange={(e) => setNumGuests(parseInt(e.target.value) || 1)}
+                defaultValue={1}
+                onChange={(e) => {
+                  const value = parseInt(e.target.value);
+                  setNumGuests(isNaN(value) ? 1 : value);
+                }}
                 placeholder="Number of guests"
                 required 
               />
